@@ -1,4 +1,4 @@
-/* 
+/*
  Weather Shield Example
  By: Nathan Seidle
  SparkFun Electronics
@@ -7,7 +7,7 @@
 
  Much of this is based on Mike Grusin's USB Weather Board code: https://www.sparkfun.com/products/10586
 
- This code reads all the various sensors (wind speed, direction, rain gauge, humidty, pressure, light, batt_lvl)
+ This code reads all the various sensors (wind speed, direction, rain gauge, humidty, pressure, light)
  and reports it over the serial comm port. This can be easily routed to an datalogger (such as OpenLog) or
  a wireless transmitter (such as Electric Imp).
 
@@ -15,7 +15,7 @@
  calcualted at each report.
 
  This example code assumes the GPS module is not used.
- */
+*/
 
 #include <Wire.h> //I2C needed for sensors
 #include <SparkFunMPL3115A2.h> //Pressure sensor
@@ -35,7 +35,6 @@ const byte STAT2 = 8;
 // analog I/O pins
 const byte REFERENCE_3V3 = A3;
 const byte LIGHT = A1;
-const byte BATT = A2;
 const byte WDIR = A0;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -80,7 +79,6 @@ float rainin = 0; // [rain inches over the past hour)] -- the accumulated rainfa
 volatile float dailyrainin = 0; // [rain inches so far today in local time]
 float pressure = 0;
 
-float batt_lvl = 11.8; //[analog value from 0 to 1023]
 float light_lvl = 455; //[analog value from 0 to 1023]
 
 // volatiles are subject to modification by IRQs
@@ -133,7 +131,7 @@ void setup()
   myPressure.begin(); // Get sensor online
   myPressure.setModeBarometer(); // Measure pressure in Pascals from 20 to 110 kPa
   myPressure.setOversampleRate(7); // Set Oversample to the recommended 128
-  myPressure.enableEventFlags(); // Enable all three pressure and temp event flags 
+  myPressure.enableEventFlags(); // Enable all three pressure and temp event flags
 
   //Configure the humidity sensor
   myHumidity.begin();
@@ -237,7 +235,7 @@ void calcWeather()
   //Find the largest windgust in the last 10 minutes
   windgustmph_10m = 0;
   windgustdir_10m = 0;
-  //Step through the 10 minutes  
+  //Step through the 10 minutes
   for(int i = 0; i < 10 ; i++)
   {
     if(windgust_10m[i] > windgustmph_10m)
@@ -255,7 +253,7 @@ void calcWeather()
 
   //Total rainfall for the day is calculated within the interrupt
   //Calculate amount of rainfall for the last 60 minutes
-  rainin = 0;  
+  rainin = 0;
   for(int i = 0 ; i < 60 ; i++)
     rainin += rainHour[i];
 
@@ -264,9 +262,6 @@ void calcWeather()
 
   //Calc light level
   light_lvl = get_light_level();
-
-  //Calc battery level
-  batt_lvl = get_battery_level();
 }
 
 //Returns the voltage of the light sensor based on the 3.3V rail
@@ -282,25 +277,6 @@ float get_light_level()
   lightSensor = operatingVoltage * lightSensor;
 
   return(lightSensor);
-}
-
-//Returns the voltage of the raw pin based on the 3.3V rail
-//This allows us to ignore what VCC might be (an Arduino plugged into USB has VCC of 4.5 to 5.2V)
-//Battery level is connected to the RAW pin on Arduino and is fed through two 5% resistors:
-//3.9K on the high side (R1), and 1K on the low side (R2)
-float get_battery_level()
-{
-  float operatingVoltage = analogRead(REFERENCE_3V3);
-
-  float rawVoltage = analogRead(BATT);
-
-  operatingVoltage = 3.30 / operatingVoltage; //The reference voltage is 3.3V
-
-  rawVoltage = operatingVoltage * rawVoltage; //Convert the 0 to 1023 int to actual voltage on BATT pin
-
-  rawVoltage *= 4.90; //(3.9k+1k)/1k - multiple BATT voltage by the voltage divider to get actual system voltage
-
-  return(rawVoltage);
 }
 
 //Returns the instataneous wind speed
@@ -321,7 +297,7 @@ float get_wind_speed()
 }
 
 //Read the wind direction sensor, return heading in degrees
-int get_wind_direction() 
+int get_wind_direction()
 {
   unsigned int adc;
 
@@ -382,8 +358,6 @@ void printWeather()
   Serial.print(dailyrainin, 2);
   Serial.print(",pressure=");
   Serial.print(pressure, 2);
-  Serial.print(",batt_lvl=");
-  Serial.print(batt_lvl, 2);
   Serial.print(",light_lvl=");
   Serial.print(light_lvl, 2);
   Serial.println("#");
