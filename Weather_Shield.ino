@@ -78,9 +78,7 @@ float humidity = 0; // [%]
 float tempf = 0; // [temperature F]
 float rainin = 0; // [rain inches over the past hour)] -- the accumulated rainfall in the past 60 min
 volatile float dailyrainin = 0; // [rain inches so far today in local time]
-//float baromin = 30.03;// [barom in] - It's hard to calculate baromin locally, do this in the agent
 float pressure = 0;
-//float dewptf; // [dewpoint F] - It's hard to calculate dewpoint locally, do this in the agent
 
 float batt_lvl = 11.8; //[analog value from 0 to 1023]
 float light_lvl = 455; //[analog value from 0 to 1023]
@@ -119,7 +117,7 @@ void wspeedIRQ()
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Weather Shield Example");
 
   pinMode(STAT1, OUTPUT); //Status LED Blue
@@ -166,12 +164,10 @@ void loop()
     if(++seconds_2m > 119) seconds_2m = 0;
 
     //Calc the wind speed and direction every second for 120 second to get 2 minute average
-    float currentSpeed = get_wind_speed();
-    //float currentSpeed = random(5); //For testing
-    int currentDirection = get_wind_direction();
+    float currentSpeed = windspeedmph;
+    int currentDirection = winddir;
     windspdavg[seconds_2m] = (int)currentSpeed;
     winddiravg[seconds_2m] = currentDirection;
-    //if(seconds_2m % 10 == 0) displayArrays(); //For testing
 
     //Check to see if this is a gust for the minute
     if(currentSpeed > windgust_10m[minutes_10m])
@@ -253,14 +249,9 @@ void calcWeather()
 
   //Calc humidity
   humidity = myHumidity.readHumidity();
-  //float temp_h = myHumidity.readTemperature();
-  //Serial.print(" TempH:");
-  //Serial.print(temp_h, 2);
 
   //Calc tempf from pressure sensor
   tempf = myPressure.readTempF();
-  //Serial.print(" TempP:");
-  //Serial.print(tempf, 2);
 
   //Total rainfall for the day is calculated within the interrupt
   //Calculate amount of rainfall for the last 60 minutes
@@ -270,8 +261,6 @@ void calcWeather()
 
   //Calc pressure
   pressure = myPressure.readPressure();
-
-  //Calc dewptf
 
   //Calc light level
   light_lvl = get_light_level();
@@ -328,10 +317,6 @@ float get_wind_speed()
 
   windSpeed *= 1.492; //4 * 1.492 = 5.968MPH
 
-  /* Serial.println();
-   Serial.print("Windspeed:");
-   Serial.println(windSpeed);*/
-
   return(windSpeed);
 }
 
@@ -371,8 +356,7 @@ void printWeather()
 {
   calcWeather(); //Go calc all the various sensors
 
-  Serial.println();
-  Serial.print("$,winddir=");
+  Serial.print("$winddir=");
   Serial.print(winddir);
   Serial.print(",windspeedmph=");
   Serial.print(windspeedmph, 1);
@@ -402,6 +386,5 @@ void printWeather()
   Serial.print(batt_lvl, 2);
   Serial.print(",light_lvl=");
   Serial.print(light_lvl, 2);
-  Serial.print(",");
   Serial.println("#");
 }
