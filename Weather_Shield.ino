@@ -84,6 +84,12 @@ float light_lvl = 455; //[analog value from 0 to 1023]
 // volatiles are subject to modification by IRQs
 volatile unsigned long raintime, rainlast, raininterval, rain;
 
+// function prototypes for direct compilation
+void printWeather();
+int get_wind_direction();
+float get_wind_speed();
+float get_light_level();
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //Interrupt routines (these are called by the hardware interrupts, not by the main code)
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
