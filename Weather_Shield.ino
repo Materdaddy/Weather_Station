@@ -216,12 +216,6 @@ void calcWeather()
   //Calc windspeed
   windspeedmph = get_wind_speed();
 
-  //Calc windgustmph
-  //Calc windgustdir
-  //Report the largest windgust today
-  windgustmph = 0;
-  windgustdir = 0;
-
   //Calc windspdmph_avg2m
   float temp = 0;
   for(int i = 0 ; i < 120 ; i++)
