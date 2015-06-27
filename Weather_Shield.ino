@@ -4,18 +4,17 @@
  SparkFun Electronics
  Date: November 16th, 2013
  License: This code is public domain but you buy me a beer if you use this and we meet someday (Beerware license).
- 
+
  Much of this is based on Mike Grusin's USB Weather Board code: https://www.sparkfun.com/products/10586
- 
+
  This code reads all the various sensors (wind speed, direction, rain gauge, humidty, pressure, light, batt_lvl)
  and reports it over the serial comm port. This can be easily routed to an datalogger (such as OpenLog) or
  a wireless transmitter (such as Electric Imp).
- 
+
  Measurements are reported once a second but windspeed and rain gauge are tied to interrupts that are
  calcualted at each report.
- 
+
  This example code assumes the GPS module is not used.
- 
  */
 
 #include <Wire.h> //I2C needed for sensors
@@ -90,7 +89,6 @@ float light_lvl = 455; //[analog value from 0 to 1023]
 volatile unsigned long raintime, rainlast, raininterval, rain;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
 //Interrupt routines (these are called by the hardware interrupts, not by the main code)
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 void rainIRQ()
@@ -100,7 +98,7 @@ void rainIRQ()
   raintime = millis(); // grab current time
   raininterval = raintime - rainlast; // calculate interval between this and last event
 
-    if (raininterval > 10) // ignore switch-bounce glitches less than 10mS after initial edge
+  if (raininterval > 10) // ignore switch-bounce glitches less than 10mS after initial edge
   {
     dailyrainin += 0.011; //Each dump is 0.011" of water
     rainHour[minutes] += 0.011; //Increase this minute's amount of rain
@@ -119,7 +117,6 @@ void wspeedIRQ()
   }
 }
 
-
 void setup()
 {
   Serial.begin(9600);
@@ -127,10 +124,10 @@ void setup()
 
   pinMode(STAT1, OUTPUT); //Status LED Blue
   pinMode(STAT2, OUTPUT); //Status LED Green
-  
+
   pinMode(WSPEED, INPUT_PULLUP); // input from wind meters windspeed sensor
   pinMode(RAIN, INPUT_PULLUP); // input from wind meters rain gauge sensor
-  
+
   pinMode(REFERENCE_3V3, INPUT);
   pinMode(LIGHT, INPUT);
 
@@ -154,7 +151,6 @@ void setup()
   interrupts();
 
   Serial.println("Weather Shield online!");
-
 }
 
 void loop()
@@ -163,7 +159,7 @@ void loop()
   if(millis() - lastSecond >= 1000)
   {
     digitalWrite(STAT1, HIGH); //Blink stat LED
-    
+
     lastSecond += 1000;
 
     //Take a speed and direction reading every second for 2 minute average
@@ -291,11 +287,11 @@ float get_light_level()
   float operatingVoltage = analogRead(REFERENCE_3V3);
 
   float lightSensor = analogRead(LIGHT);
-  
+
   operatingVoltage = 3.3 / operatingVoltage; //The reference voltage is 3.3V
-  
+
   lightSensor = operatingVoltage * lightSensor;
-  
+
   return(lightSensor);
 }
 
@@ -308,13 +304,13 @@ float get_battery_level()
   float operatingVoltage = analogRead(REFERENCE_3V3);
 
   float rawVoltage = analogRead(BATT);
-  
+
   operatingVoltage = 3.30 / operatingVoltage; //The reference voltage is 3.3V
-  
+
   rawVoltage = operatingVoltage * rawVoltage; //Convert the 0 to 1023 int to actual voltage on BATT pin
-  
+
   rawVoltage *= 4.90; //(3.9k+1k)/1k - multiple BATT voltage by the voltage divider to get actual system voltage
-  
+
   return(rawVoltage);
 }
 
@@ -369,7 +365,6 @@ int get_wind_direction()
   return (-1); // error, disconnected?
 }
 
-
 //Prints the various variables directly to the port
 //I don't like the way this function is written but Arduino doesn't support floats under sprintf
 void printWeather()
@@ -409,7 +404,4 @@ void printWeather()
   Serial.print(light_lvl, 2);
   Serial.print(",");
   Serial.println("#");
-
 }
-
-
